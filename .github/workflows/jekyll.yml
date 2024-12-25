@@ -1,47 +1,54 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-# Sample workflow for building and deploying a Jekyll site to GitHub Pages
+# Указывает имя рабочего процесса. Это название будет отображаться в интерфейсе GitHub Actions.
 name: Deploy Jekyll site to Pages
 
+# Определяет триггеры, которые запускают рабочий процесс.
 on:
-  # Runs on pushes targeting the default branch
+  # Рабочий процесс запускается при каждом push в ветку main.
   push:
     branches: ["master"]
 
-  # Allows you to run this workflow manually from the Actions tab
+  # Позволяет запускать рабочий процесс вручную через вкладку Actions в интерфейсе GitHub.
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# Устанавливает разрешения для токена GITHUB_TOKEN, который используется в процессе.
 permissions:
+  # Разрешает чтение содержимого репозитория.
   contents: read
+  # Разрешает запись на GitHub Pages.
   pages: write
+  #Разрешает запись токена идентификации.
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# Управляет параллельными запусками рабочего процесса.
 concurrency:
+  # Указывает группу для управления параллелизмом.
   group: "pages"
+  # Указывает, что запущенные процессы не должны отменяться, позволяя завершить текущие развертывания.
   cancel-in-progress: false
 
+# Определяет набор задач, которые будут выполняться в рамках рабочего процесса.
 jobs:
-  # Build job
+  # Задача для сборки сайта.
   build:
+    # Указывает, что задача будет выполняться на последней версии Ubuntu.
     runs-on: ubuntu-latest
+    # Определяет шаги, которые будут выполнены в этой задаче.
     steps:
+      # Использует действие actions/checkout@v4, чтобы извлечь содержимое репозитория.
       - name: Checkout
         uses: actions/checkout@v4
+      # Устанавливает Ruby и Bundler
       - name: Setup Ruby
         uses: ruby/setup-ruby@8575951200e472d5f2d95c625da0c7bec8217c42 # v1.161.0
         with:
-          ruby-version: '3.2' # Not needed with a .ruby-version file
-          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+          ruby-version: '3.2' # Указывает версию Ruby.
+          bundler-cache: true # Включает кэширование установленных гемов.
           cache-version: 0 # Increment this number if you need to re-download cached gems
+      # Настраивает GitHub Pages
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
+      # Выполняет команду bundle exec jekyll build, чтобы собрать сайт.
       - name: Build with Jekyll
         # Outputs to the './_site' directory by default
         run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
@@ -51,12 +58,15 @@ jobs:
         # Automatically uploads an artifact from the './_site' directory by default
         uses: actions/upload-pages-artifact@v3
 
-  # Deployment job
+  # Задача для развертывания собранного сайта на GitHub Pages.
   deploy:
+    # Указывает, что задача развертывается в окружении github-pages
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    # Указывает, что задача будет выполняться на последней версии Ubuntu.
     runs-on: ubuntu-latest
+    # Указывает, что эта задача зависит от завершения задачи build.
     needs: build
     steps:
       - name: Deploy to GitHub Pages
